@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>info page</title>
+		<script type="text/javascript" src="/static/js/jquery-1.10.2.min.js"></script>
+		<script >
+$(document).ready(function(){
+  $("#btn1").click(function(){
+    alert("Text: " + $("#X-from").val().length);
+  });
+});
+</script>
+	</head>
+	<body>
+		专业：计算机<br />
+		姓名：王隽毅<br />
+		学号：1911475<br />
+		<div align="center"><img style="width:250px;height:150px; margin:0 auto" src="/static/img/Nudle_logo.png"/><br /></div>
+		<div align="center">收件人搜索 ： <input type="text" id=X-to ><br>
+		寄件人搜索 ： <input type="text" id=X-from ><br>
+		主题搜索 ： <input type="text" id=subject ><br>
+			正文搜索 ： <input type="text" id=main ><br>
+		<button onclick="submit();">提交</button>
+			<input type="radio" name="sex" value="hl" checked="checked">只显示查询结果高亮部分
+			<input type="radio" name="sex" value="ptext">显示查询结果原文本</div>
+		<div align="center"><pre style="width:150px " id=result></pre></div>
+		<div align="center"><textarea style="width:800px;height:400px" id=context></textarea></div>
+		<script>
+			 function submit() {
+			 $.ajax({
+			 	url: "submit", /*数据提交到submit处*/
+			 	type: "POST", /*采用POST方法提交*/
+			 	data: { "X-from": $("#X-from").val(),"X-to":$("#X-to").val(),"subject":$("#subject").val(),"main":$("#main").val()},
+			 	/*result为后端函数返回的json*/
+			 	success: function (result) {
+			  		if (result.message == "success!") {
+			  			var s=""
+			  			var s1=""
+			  			var num=result.ans["hits"]["total"]["value"]
+			  			if(num>10)
+			  			{
+			  				for(var i=0;i<10;i++)
+			  				{
+			  					s=s+(i+1).toString()+"\n"
+			  					for(var j=0;j<16;j++)
+			  					{
+			  						s=s+result.keys[j]+" : "+result.ans["hits"]["hits"][i]["_source"][result.keys[j]]+"\n"
+			  					}
+			  					s1=s1+(i+1).toString()+"\n"
+			  					for(var k=0;k<result.cond.length;k++)
+			  					{
+			  						if(result.cond[k][0])
+			  						{
+			  							s1=s1+"<b>"+result.cond[k][1]+"</b>"+" : "+result.ans["hits"]["hits"][i]["highlight"][result.cond[k][1]]+"\n"
+			  						}
+			  					}
+			  				}
+			  			}
+			  			else{
+			  			if(num>0)
+			  			{
+			  				for(var i=0;i<num;i++)
+			  				{
+			  					s=s+(i+1).toString()+"\n"
+			  					for(var j=0;j<16;j++)
+			  					{
+			  						s=s+result.keys[j]+" : "+result.ans["hits"]["hits"][i]["_source"][result.keys[j]]+"\n"
+			  					}
+			  					s1=s1+(i+1).toString()+"\n"
+			  					for(var k=0;k<result.cond.length;k++)
+			  					{
+			  						if(result.cond[k][0])
+			  						{
+			  							s1=s1+"<b>"+result.cond[k][1]+"</b>"+" : "+result.ans["hits"]["hits"][i]["highlight"][result.cond[k][1]]+"\n"
+			  						}
+			  					}
+			  				}
+			  			}
+			  			}
+			  			if($("input:radio:checked").val()=="hl")
+			  			{
+							$("#context").text("")
+							$("#result").html(s1)
+							$("textarea").attr("style","display:none")
+						}
+						else
+						{
+							$("#context").text(s)
+							$("#result").html("")
+							$("textarea").attr("style","width:800px;height:400px;display:")
+						}
+			  		}
+			  		else {
+			  			alert(result.message)
+			  		}
+			 	}
+			 });
+			 }
+ 		</script>
+	</body>
+</html>
